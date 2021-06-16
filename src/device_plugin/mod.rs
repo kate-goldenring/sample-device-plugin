@@ -132,8 +132,8 @@ pub async fn run_mock_device_plugin(
 
 /// Registers the mock DP with the DeviceManager's registration service
 pub async fn register_mock_device_plugin(
-    kubelet_socket: String,
-    dp_socket: String,
+    kubelet_socket: &str,
+    socket_name: &str,
     dp_resource_name: &str,
 ) -> anyhow::Result<()> {
     let op = DevicePluginOptions {
@@ -142,13 +142,14 @@ pub async fn register_mock_device_plugin(
     };
     let register_request = tonic::Request::new(RegisterRequest {
         version: API_VERSION.into(),
-        endpoint: dp_socket.clone(),
+        endpoint: socket_name.to_string(),
         resource_name: dp_resource_name.to_string(),
         options: Some(op),
     });
+    let closure_socket = kubelet_socket.to_string();
     let channel = Endpoint::try_from("dummy://[::]:50051")?
     .connect_with_connector(tower::service_fn(move |_: Uri| {
-        UnixStream::connect(kubelet_socket.clone())
+        UnixStream::connect(closure_socket.to_string())
     }))
     .await?;
     let mut registration_client = registration_client::RegistrationClient::new(channel);
