@@ -4,6 +4,11 @@ version = "0.1.0"
 authors = ["Kate Goldenring <kate.goldenring@microsoft.com>"]
 edition = "2018"
 
+# Patch to allow invalid authority headers provided by grpc-go / kubelet
+# Issue to track: https://github.com/grpc/grpc-go/issues/2628
+[patch.crates-io]
+h2 = { git = "https://github.com/kate-goldenring/h2", branch = "v0.3.3-patch" }
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -19,6 +24,7 @@ tokio = { version = "1.0", features = ["rt-multi-thread", "time", "fs", "macros"
 # TODO confirm which features are needed
 tokio-stream = { version="0.1", features = ["fs", "net"] }
 tower = { version = "0.4" }
+h2 = "=0.3.3"
 
 [build-dependencies]
 tonic-build = "0.4"

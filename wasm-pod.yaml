@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: dp-request
+spec:
+  containers:
+    - name: krustlet-tutorial
+      image: nginx:latest
+      resources:
+        requests:
+          "example.com/mock-plugin" : 1
+        limits:
+          "example.com/mock-plugin" : 1
+  tolerations:
+    - key: "kubernetes.io/arch"
+      operator: "Equal"
+      value: "wasm32-wasi"
+      effect: "NoExecute"
+    - key: "kubernetes.io/arch"
+      operator: "Equal"
+      value: "wasm32-wasi"
+      effect: "NoSchedule"

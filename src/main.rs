@@ -33,7 +33,7 @@ async fn main() -> anyhow::Result<()> {
     let socket_name = format!("{}.sock", name);
     let dp_socket = format!("{}{}", dp_dir, socket_name);
     println!("running device plugin on socket {}", dp_socket);
-    let kubelet_socket = format!("{}{}.sock",dp_dir, "kubelet");
+    let kubelet_socket = format!("{}{}.sock", dp_dir, "kubelet");
     let resource_name = format!("example.com/{}", name);
     let res = run(&dp_socket, &socket_name, &resource_name, &kubelet_socket).await;
     println!("about to remove socket");
@@ -43,18 +43,28 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn run(dp_socket: &str, socket_name: &str, resource_name: &str, kubelet_socket: &str) -> anyhow::Result<()> {
+async fn run(
+    dp_socket: &str,
+    socket_name: &str,
+    resource_name: &str,
+    kubelet_socket: &str,
+) -> anyhow::Result<()> {
     let (_tx, rx) = tokio::sync::watch::channel(device_plugin::make_devices());
     let thread_socket_path = dp_socket.to_string();
-    let device_plugin_thread = tokio::spawn( async move {
-        device_plugin::run_mock_device_plugin(rx, DEFAULT_PLUGIN_PATH.to_string(), thread_socket_path.clone()).await.unwrap()
+    let device_plugin_thread = tokio::spawn(async move {
+        device_plugin::run_mock_device_plugin(
+            rx,
+            DEFAULT_PLUGIN_PATH.to_string(),
+            thread_socket_path.clone(),
+        )
+        .await
+        .unwrap()
     });
     // wait for DP to be served
     tokio::time::sleep(std::time::Duration::from_secs(1)).await;
-    device_plugin::register_mock_device_plugin(&kubelet_socket, &socket_name, &resource_name).await?;
-    
+    device_plugin::register_mock_device_plugin(&kubelet_socket, &socket_name, &resource_name)
+        .await?;
+
     device_plugin_thread.await?;
     Ok(())
 }
-
-

@@ -1,18 +1,18 @@
 use crate::device_plugin_api::v1beta1::{
-    ContainerAllocateResponse, RegisterRequest,
     device_plugin_server::{DevicePlugin, DevicePluginServer},
-    registration_client, AllocateRequest, AllocateResponse, Device, DevicePluginOptions, Empty,
-    ListAndWatchResponse, PreStartContainerRequest, PreStartContainerResponse,
-    PreferredAllocationRequest, PreferredAllocationResponse, API_VERSION,
+    registration_client, AllocateRequest, AllocateResponse, ContainerAllocateResponse, Device,
+    DevicePluginOptions, Empty, ListAndWatchResponse, PreStartContainerRequest,
+    PreStartContainerResponse, PreferredAllocationRequest, PreferredAllocationResponse,
+    RegisterRequest, API_VERSION,
 };
 use futures::Stream;
 use futures::TryFutureExt;
-use std::pin::Pin;
-use tonic::{Request, Response, Status};
-use tonic::transport::{Endpoint, Server, Uri};
 use std::convert::TryFrom;
-use tokio::net::{UnixListener,UnixStream};
+use std::pin::Pin;
+use tokio::net::{UnixListener, UnixStream};
 use tokio::sync::watch;
+use tonic::transport::{Endpoint, Server, Uri};
+use tonic::{Request, Response, Status};
 
 const HEALTHY: &str = "Healthy";
 const UNHEALTHY: &str = "Unhealthy";
@@ -34,9 +34,8 @@ impl DevicePlugin for MockDevicePlugin {
         unimplemented!();
     }
 
-    type ListAndWatchStream = Pin<
-        Box<dyn Stream<Item = Result<ListAndWatchResponse, Status>> + Send + Sync + 'static>,
-    >;
+    type ListAndWatchStream =
+        Pin<Box<dyn Stream<Item = Result<ListAndWatchResponse, Status>> + Send + Sync + 'static>>;
     async fn list_and_watch(
         &self,
         _request: Request<Empty>,
@@ -112,6 +111,7 @@ pub async fn run_mock_device_plugin(
 ) -> anyhow::Result<()> {
     tokio::fs::create_dir_all(&socket_dir).await?;
     let device_plugin = MockDevicePlugin { devices_receiver };
+    println!("Serving device plugin at {}", socket_path);
     let incoming = {
         let uds = UnixListener::bind(socket_path)?;
 
@@ -126,6 +126,7 @@ pub async fn run_mock_device_plugin(
         .add_service(DevicePluginServer::new(device_plugin))
         .serve_with_incoming(incoming)
         .await?;
+    println!("Device plugin service ended");
 
     Ok(())
 }
@@ -148,14 +149,12 @@ pub async fn register_mock_device_plugin(
     });
     let closure_socket = kubelet_socket.to_string();
     let channel = Endpoint::try_from("dummy://[::]:50051")?
-    .connect_with_connector(tower::service_fn(move |_: Uri| {
-        UnixStream::connect(closure_socket.to_string())
-    }))
-    .await?;
-    let mut registration_client = registration_client::RegistrationClient::new(channel);
-    registration_client
-        .register(register_request)
+        .connect_with_connector(tower::service_fn(move |_: Uri| {
+            UnixStream::connect(closure_socket.to_string())
+        }))
         .await?;
+    let mut registration_client = registration_client::RegistrationClient::new(channel);
+    registration_client.register(register_request).await?;
     Ok(())
 }
 
@@ -177,9 +176,7 @@ pub fn make_devices() -> Vec<Device> {
         topology: None,
     };
     vec![d1, d2, d3]
-    
 }
-
 
 #[cfg(unix)]
 mod unix {
