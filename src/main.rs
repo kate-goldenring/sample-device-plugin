@@ -16,7 +16,7 @@ async fn main() -> anyhow::Result<()> {
     let args: Vec<String> = std::env::args().collect();
     let dp_dir: &str = {
         if args.len() > 1 {
-            println!("path is {}", &args[0]);
+            println!("path is {}", &args[1]);
             &args[1]
         } else {
             DEFAULT_PLUGIN_PATH
@@ -24,7 +24,7 @@ async fn main() -> anyhow::Result<()> {
     };
     let name = {
         if args.len() > 2 {
-            println!("name is {}", &args[1]);
+            println!("name is {}", &args[2]);
             &args[2]
         } else {
             PLUGIN_NAME
