@@ -7,7 +7,7 @@ pub(crate) mod device_plugin_api {
 mod device_plugin;
 
 #[cfg(target_family = "unix")]
-const DEFAULT_PLUGIN_PATH: &str = "/var/lib/kubelet/device_plugins/";
+const DEFAULT_PLUGIN_PATH: &str = "/var/lib/kubelet/device-plugins/";
 const PLUGIN_NAME: &str = "mock_plugin";
 
 #[tokio::main(flavor = "multi_thread")]
