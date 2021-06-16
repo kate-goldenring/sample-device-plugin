@@ -1,0 +1,24 @@
+[package]
+name = "sample-device-plugin"
+version = "0.1.0"
+authors = ["Kate Goldenring <kate.goldenring@microsoft.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+async-stream = "0.3"
+async-trait = "0.1.0"
+anyhow = "1.0"
+futures = { version = "0.3", default-features = false }
+tonic = "0.4"
+# prost is needed for the files built by the protobuf
+prost = "0.7"
+# TODO confirm which features are needed
+tokio = { version = "1.0", features = ["rt-multi-thread", "time", "fs", "macros", "net"] }
+# TODO confirm which features are needed
+tokio-stream = { version="0.1", features = ["fs", "net"] }
+tower = { version = "0.4" }
+
+[build-dependencies]
+tonic-build = "0.4"
