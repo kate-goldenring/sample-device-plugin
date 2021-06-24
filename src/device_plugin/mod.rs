@@ -83,10 +83,13 @@ impl DevicePlugin for MockDevicePlugin {
     ) -> Result<Response<AllocateResponse>, Status> {
         println!("allocate called");
         let allocate_request = request.into_inner();
+        let mut envs = std::collections::HashMap::new();
+        envs.insert("MOCK_ENV_VAR".to_string(), "1".to_string());
         let container_responses: Vec<ContainerAllocateResponse> = allocate_request
             .container_requests
             .into_iter()
             .map(|_| ContainerAllocateResponse {
+                envs: envs.clone(),
                 ..Default::default()
             })
             .collect();
